@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from '../api/models/output/output';
 import { User } from '../domain/user.entity';
-import { ObjectId } from 'mongodb';
+//import { ObjectId } from 'mongodb';
 @Injectable()
 export class UsersRepositorySql {
   constructor(@InjectDataSource() protected dataSource: DataSource) {}

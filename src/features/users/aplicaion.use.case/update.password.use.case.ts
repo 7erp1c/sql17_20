@@ -3,6 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { BcryptAdapter } from '../../../base/adapters/bcrypt.adapter';
 import { DateCreate } from '../../../base/adapters/get-current-date';
+import { UsersRepositorySql } from '../sql.infrastructure/user.repository.sql';
 export class UpdatePasswordUseCaseCommand {
   constructor(public inputModelDto: NewPasswordInputModel) {}
 }
@@ -12,6 +13,7 @@ export class UpdatePasswordUseCase
 {
   constructor(
     private readonly usersRepository: UsersRepository,
+    private readonly usersRepositorySql: UsersRepositorySql,
     private readonly bcryptAdapter: BcryptAdapter,
     protected dateCreate: DateCreate,
   ) {}

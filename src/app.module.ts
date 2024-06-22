@@ -33,7 +33,7 @@ const typeOrmModule = TypeOrmModule.forRoot({
   username: 'postgres',
   password: 'su',
   database: 'postgres',
-  autoLoadEntities: false,
+  autoLoadEntities: true,
   synchronize: false,
   // logging: true,
   //ssl: true,

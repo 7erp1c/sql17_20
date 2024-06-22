@@ -1,21 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../../users/infrastructure/users.repository';
-import { BcryptAdapter } from '../../../base/adapters/bcrypt.adapter';
-import { DateCreate } from '../../../base/adapters/get-current-date';
 import { TestingRepository } from '../infrastructure/testing.repository';
+import { TestingRepositorySql } from '../infrastructure.sql/testing.repository.sql';
 
 @Injectable()
 export class TestingService {
-  constructor(private readonly testingRepository: TestingRepository) {}
+  constructor(
+    private readonly testingRepository: TestingRepository,
+    private readonly testingRepositorySql: TestingRepositorySql,
+  ) {}
 
   async deleteAllData() {
     try {
       //this.testingRepository.dropDb();
-      await this.testingRepository.deleteAll();
+      await this.testingRepositorySql.deleteAll();
       return;
     } catch {
       console.log('main method has failed, try additional method');
-      await this.testingRepository.deleteAll();
+      await this.testingRepositorySql.deleteAll();
     }
   }
 }
