@@ -16,7 +16,18 @@ export class CreatePostInputModels {
   @IsBlogExist()
   blogId: string;
 }
+
 export class UpdatePostInputModel extends CreatePostInputModels {}
+export class PostForBlog {
+  @IsStringLength(1, 30)
+  title: string;
+
+  @IsStringLength(1, 100)
+  shortDescription: string;
+
+  @IsStringLength(1, 1000)
+  content: string;
+}
 export class CreatePostInputModelByBlog {
   @IsStringLength(0, 30)
   title: string;

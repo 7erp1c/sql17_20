@@ -33,7 +33,8 @@ export class LoginUserUseCase
     );
     if (!user)
       throw new HttpException('Bad login or password', HttpStatus.UNAUTHORIZED);
-    const userId = user._id.toString();
+    // const userId = user._id.toString(); //mongoose
+    const userId = user.id.toString();
     const userName = user.login;
     //сравним input-пароль c паролем в Db
     const compareHash = await this.bcryptAdapter.compareHash(

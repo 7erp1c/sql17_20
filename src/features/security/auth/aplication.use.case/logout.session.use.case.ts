@@ -4,6 +4,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
 import { DevicesService } from '../../devices/aplication/devices.service';
 import { RefreshTokenBlackRepository } from '../infrastructure/refresh.token.black.repository';
+import { RefreshTokenBlackRepositorySql } from '../infrastrucrure.sql/refresh.token.black.repository.sql';
 export class LogoutSessionUseCaseCommand {
   constructor(public oldRefreshToken: string) {}
 }
@@ -14,6 +15,7 @@ export class LogoutSessionUseCase
   constructor(
     private readonly jwtService: JwtService,
     private readonly tokenBlack: RefreshTokenBlackRepository,
+    private readonly tokenBlackSql: RefreshTokenBlackRepositorySql,
     private readonly devicesService: DevicesService,
   ) {}
 
@@ -22,13 +24,14 @@ export class LogoutSessionUseCase
       secret: jwtConstants.secret,
     });
     console.log('controller', payload);
-    const isInBlackList = await this.tokenBlack.findInBlackList(
+    //const isInBlackList = await this.tokenBlack.findInBlackList( //mongoose
+    const isInBlackList = await this.tokenBlackSql.findInBlackList(
       command.oldRefreshToken,
     );
 
     if (!payload || isInBlackList) throw new UnauthorizedException();
 
-    await this.tokenBlack.addToBlackList(command.oldRefreshToken);
+    await this.tokenBlackSql.addToBlackList(command.oldRefreshToken);
     await this.devicesService.terminateSessionForLogout(
       payload.deviceId,
       payload.userId,

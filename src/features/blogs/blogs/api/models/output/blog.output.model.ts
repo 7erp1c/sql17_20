@@ -14,3 +14,15 @@ export const BlogOutputModelMapper = (
     isMembership: blog.isMembership,
   };
 };
+export const BlogOutputModelMapperSql = (
+  blog: BlogTypeOutput,
+): BlogTypeOutput => {
+  return {
+    id: blog.id,
+    name: blog.name,
+    description: blog.description,
+    websiteUrl: blog.websiteUrl,
+    createdAt: blog.createdAt,
+    isMembership: blog.isMembership,
+  };
+};

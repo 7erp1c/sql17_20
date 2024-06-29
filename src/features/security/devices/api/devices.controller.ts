@@ -12,18 +12,21 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { SessionsQueryRepository } from '../infrastructure/device.query.repository';
 import { DevicesService } from '../aplication/devices.service';
+import { SessionsQueryRepositorySql } from '../infrastructure.sql/device.query.repository.sql';
 @ApiTags('Security')
 @Controller('security')
 export class DevicesController {
   constructor(
     protected sessionsQueryRepository: SessionsQueryRepository,
+    protected sessionsQueryRepositorySql: SessionsQueryRepositorySql,
     protected sessionsService: DevicesService,
   ) {}
   @Get('devices')
   @HttpCode(HttpStatus.OK)
   async getDevices(@Req() req: Request) {
     try {
-      return await this.sessionsQueryRepository.getSessionsByUserId(
+      //return await this.sessionsQueryRepository.getSessionsByUserId(//mongoose
+      return await this.sessionsQueryRepositorySql.getSessionsByUserId(
         req.cookies.refreshToken,
       );
     } catch {

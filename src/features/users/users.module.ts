@@ -13,7 +13,7 @@ import { CreateUserUseCase } from './aplicaion.use.case/create.user.use.case';
 import { DeleteUserUseCase } from './aplicaion.use.case/delete.user.use.case';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersRepositorySql } from './sql.infrastructure/user.repository.sql';
-import { UserQueryRepositorySql } from './sql.infrastructure/user.query.repository.sql';
+import { UsersQueryRepositorySql } from './sql.infrastructure/users-query-repository-sql';
 
 const useCases = [CreateUserUseCase, DeleteUserUseCase];
 const usersProviders = [
@@ -21,7 +21,7 @@ const usersProviders = [
   UsersRepository,
   UsersQueryRepository,
   UsersRepositorySql,
-  UserQueryRepositorySql,
+  UsersQueryRepositorySql,
 ];
 //
 // const queryCases = [GetAllUsersUseCase];
@@ -46,6 +46,6 @@ const usersProviders = [
     ...useCases,
     // ...queryCases,
   ],
-  exports: [UsersService, UsersQueryRepository],
+  exports: [UsersService, UsersQueryRepository, UsersQueryRepositorySql],
 })
 export class UsersModule {}

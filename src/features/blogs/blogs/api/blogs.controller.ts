@@ -7,6 +7,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -22,7 +23,10 @@ import { BlogsService } from '../aplication/blogs.service';
 import { BlogTypeOutput } from './models/output/output';
 import { QueryBlogsRequestType } from './models/input/input';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
-import { CreatePostInputModelByBlog } from '../../posts/api/models/input/create.post.input.models';
+import {
+  CreatePostInputModelByBlog,
+  PostForBlog,
+} from '../../posts/api/models/input/create.post.input.models';
 import { PostsService } from '../../posts/aplication/posts.service';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 
@@ -31,15 +35,19 @@ import { AdminAuthGuard } from '../../../../common/guards/auth.admin.guard';
 import { QueryUsersRequestType } from '../../../users/api/models/input/input';
 import { createQuery } from '../../../../base/adapters/query/create.query';
 import { BlindGuard } from '../../../../common/guards/blind.guard.token';
+import { BlogsQueryRepositorySql } from '../infrastructure.sql/blogs.query.repository.sql';
+import { PostsQueryRepositorySql } from '../../posts/infrastructure.sql/posts.query.repository.sql';
 
 @ApiTags('Blogs')
-@Controller('blogs')
+@Controller('sa/blogs')
 export class BlogsController {
   constructor(
     protected blogsService: BlogsService,
     protected blogsQueryRepository: BlogsQueryRepository,
     protected postsQueryRepository: PostsQueryRepository,
     protected postsService: PostsService,
+    protected blogsQueryRepositorySql: BlogsQueryRepositorySql,
+    protected postsQueryRepositorySql: PostsQueryRepositorySql,
   ) {}
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -50,7 +58,7 @@ export class BlogsController {
   // @ApiResponse({ status: 403, description: 'Forbidden.' })
   async getAllBlogs(@Query() query: QueryBlogsRequestType) {
     const { sortData, searchData } = createQuery(query);
-    return await this.blogsQueryRepository.getAllBlogs(sortData, searchData);
+    return await this.blogsQueryRepositorySql.getAllBlogs(sortData, searchData);
   }
 
   @Post()
@@ -59,7 +67,8 @@ export class BlogsController {
   async createBlog(
     @Body() CreateModel: CreateBlogInputModel,
   ): Promise<BlogTypeOutput> {
-    return await this.blogsService.createBlog(CreateModel);
+    const createBlogId = await this.blogsService.createBlog(CreateModel);
+    return await this.blogsQueryRepositorySql.getById(createBlogId);
   }
 
   @Get(':blogId/posts')
@@ -71,20 +80,23 @@ export class BlogsController {
     @Req() req: Request,
   ) {
     const { sortData, searchData } = createQuery(query);
-    const findBlogById = await this.blogsService.findBlogById(blogId);
+    // const findBlogById = await this.blogsService.findBlogById(blogId);//mongoose
+    const findBlogById = await this.blogsQueryRepositorySql.getById(blogId);
     if (!findBlogById) {
       throw new BadRequestException('Sorry bro, blog not found');
     }
     if (req.user && req.user.userId) {
-      return await this.postsQueryRepository.getAllPosts(
+      //return await this.postsQueryRepository.getAllPosts(//mongoose
+      return await this.postsQueryRepositorySql.getAllPosts(
         sortData,
-        findBlogById._id.toString(),
+        findBlogById.id,
         req.user.userId,
       );
     } else {
-      return await this.postsQueryRepository.getAllPosts(
+      //return await this.postsQueryRepository.getAllPosts(//mongoose
+      return await this.postsQueryRepositorySql.getAllPosts(
         sortData,
-        findBlogById._id.toString(),
+        findBlogById.id,
         undefined,
       );
     }
@@ -97,8 +109,10 @@ export class BlogsController {
     @Param('blogId') blogId: string,
     @Body() inputModel: CreatePostInputModelByBlog,
   ) {
-    const findBlogById = await this.blogsService.findBlogById(blogId);
-    if (!findBlogById) {
+    // const findBlogById = await this.blogsService.findBlogById(blogId);//mongoose
+    const findBlogById = await this.blogsQueryRepositorySql.getById(blogId);
+
+    if (!findBlogById.id) {
       throw new BadRequestException('Sorry bro, blog not found');
     }
     const inputModelPost = {
@@ -107,11 +121,12 @@ export class BlogsController {
       content: inputModel.content,
       blogId: blogId,
     };
+
     const newPost = await this.postsService.createPost(
       inputModelPost,
       findBlogById.name,
     );
-    return await this.postsQueryRepository.getPostById(newPost);
+    return await this.postsQueryRepositorySql.getPostById(newPost);
   }
 
   @Get(':id')
@@ -119,7 +134,33 @@ export class BlogsController {
   async getBlogById(@Param('id') blogId: string) {
     return await this.blogsQueryRepository.findBlogById(blogId);
   }
+  @Put(':blogId/posts/:postId')
+  @UseGuards(AdminAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updatePostForBlog(
+    @Param('blogId') blogId: string,
+    @Param('postId') postId: string,
+    @Body() UpdateModel: PostForBlog,
+  ) {
+    const blogIsDeleted =
+      await this.blogsQueryRepositorySql.getDeletedStatus(blogId);
+    if (blogIsDeleted)
+      throw new NotFoundException([
+        { message: 'Blog not found', field: 'isDeleted' },
+      ]);
+    const postIsDeleted =
+      await this.postsQueryRepositorySql.getDeletedStatus(postId);
+    if (postIsDeleted)
+      throw new NotFoundException([
+        { message: 'Post not found', field: 'isDeleted' },
+      ]);
 
+    return await this.postsService.updatePostForBlog(
+      blogId,
+      postId,
+      UpdateModel,
+    );
+  }
   @Put(':id')
   @UseGuards(AdminAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -127,13 +168,44 @@ export class BlogsController {
     @Param('id') blogId: string,
     @Body() UpdateModel: UpdateBlogInputModel,
   ) {
+    const blogIsDeleted =
+      await this.blogsQueryRepositorySql.getDeletedStatus(blogId);
+    if (blogIsDeleted)
+      throw new NotFoundException([
+        { message: 'Blog not found', field: 'isDeleted' },
+      ]);
+
     return await this.blogsService.updateBlog(blogId, UpdateModel);
+  }
+
+  @Delete(':blogId/posts/:postId')
+  @UseGuards(AdminAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePostForBlog(
+    @Param('blogId') blogId: string,
+    @Param('postId') postId: string,
+  ) {
+    const postIsDeleted =
+      await this.postsQueryRepositorySql.getDeletedStatus(postId);
+    if (postIsDeleted)
+      throw new NotFoundException([
+        { message: 'Post not found', field: 'isDeleted' },
+      ]);
+
+    return await this.postsService.deletePostForBlog(blogId, postId);
   }
 
   @Delete(':id')
   @UseGuards(AdminAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param('id') blogId: string) {
+    const blogIsDeleted =
+      await this.blogsQueryRepositorySql.getDeletedStatus(blogId);
+    if (blogIsDeleted)
+      throw new NotFoundException([
+        { message: 'Blog not found', field: 'isDeleted' },
+      ]);
+
     return await this.blogsService.deleteBlog(blogId);
   }
 }

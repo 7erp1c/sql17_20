@@ -18,15 +18,16 @@ export class RegistrationUserUseCase
     private readonly commandBus: CommandBus,
   ) {}
   async execute(userModelDto: RegistrationUserUseCaseCommand) {
-    const createUser = await this.commandBus.execute(
+    const createUserId = await this.commandBus.execute(
       new CreateUserUseCaseCommand(userModelDto.inputModel),
     );
-    const user = await this.usersService.getUserByEmail(createUser.email);
-    if (!createUser) throw new BadRequestException();
+    const user = await this.usersService.getUserById(createUserId);
+
+    if (!createUserId || !user) throw new BadRequestException();
     const sendEmail = await this.emailsManager.sendMessageWitchConfirmationCode(
-      createUser.email,
-      createUser.login,
-      user.emailConfirmation.confirmationCode,
+      user.email,
+      user.login,
+      user.confirmationCode,
     );
     if (!sendEmail)
       throw new Error('The email has not been delivered to the soap.');

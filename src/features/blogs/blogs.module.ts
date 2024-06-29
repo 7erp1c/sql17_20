@@ -29,12 +29,14 @@ import {
   PostsLikesSchema,
 } from './likes/domain/likes.entity';
 import { DateCreate } from '../../base/adapters/get-current-date';
-import {
-  BlogExistsValidator,
-  IsBlogExist,
-} from '../../common/decorators/validate/blogId/isBlogExist';
+import { BlogExistsValidator } from '../../common/decorators/validate/blogId/isBlogExist';
 import { RandomNumberService } from '../../common/service/random/randomNumberUUVid';
 import { JwtService } from '@nestjs/jwt';
+import { BlogsRepositorySql } from './blogs/infrastructure.sql/blogs.repository.sql';
+import { BlogsQueryRepositorySql } from './blogs/infrastructure.sql/blogs.query.repository.sql';
+import { PostsRepositorySql } from './posts/infrastructure.sql/posts.repository.sql';
+import { PostsQueryRepositorySql } from './posts/infrastructure.sql/posts.query.repository.sql';
+import { PostsLikesQueryRepositorySql } from './likes/infrastructure.sql/posts.likes.query.repository.sql';
 
 const controllers = [BlogsController, PostsController, CommentsController];
 
@@ -53,6 +55,8 @@ const repositories = [
   CommentsLikesRepository,
   PostsLikesQueryRepository,
   PostLikesRepository,
+  PostsRepositorySql, //sql
+  BlogsRepositorySql, //sql
 ];
 
 const queryRepositories = [
@@ -60,6 +64,9 @@ const queryRepositories = [
   PostsQueryRepository,
   CommentsQueryRepository,
   CommentsLikesQueryRepository,
+  PostsLikesQueryRepositorySql, //sql
+  BlogsQueryRepositorySql, //sql
+  PostsQueryRepositorySql, //sql
 ];
 
 const providers = [

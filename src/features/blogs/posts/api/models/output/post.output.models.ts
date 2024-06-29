@@ -17,3 +17,18 @@ export const postMapper = (
     extendedLikesInfo: likes,
   };
 };
+export const postMapperSql = (
+  post: PostOutputDto,
+  likes: PostsLikesInfoType,
+): PostOutputDto => {
+  return {
+    id: post.id,
+    title: post.title,
+    shortDescription: post.shortDescription,
+    content: post.content,
+    blogId: post.blogId,
+    blogName: post.blogName,
+    createdAt: post.createdAt,
+    extendedLikesInfo: likes,
+  };
+};

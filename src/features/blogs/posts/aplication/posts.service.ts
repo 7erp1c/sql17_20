@@ -1,17 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import {
   CreatePostInputModels,
+  PostForBlog,
   UpdatePostInputModel,
 } from '../api/models/input/create.post.input.models';
 import { Post } from '../domain/posts.entity';
 import { PostsRepository } from '../infrastructure/posts.repository';
 import { DateCreate } from '../../../../base/adapters/get-current-date';
+import { PostsRepositorySql } from '../infrastructure.sql/posts.repository.sql';
 
 @Injectable()
 export class PostsService {
   constructor(
     protected readonly dateCreate: DateCreate,
     protected readonly postsRepository: PostsRepository,
+    protected readonly postsRepositorySql: PostsRepositorySql,
   ) {}
 
   async createPost(inputModel: CreatePostInputModels, blogName: string) {
@@ -24,8 +27,25 @@ export class PostsService {
       blogName: blogName,
       createdAt: createdAt,
     };
-    const newPostId = this.postsRepository.createPost(newPosts);
+    //const newPostId = this.postsRepository.createPost(newPosts);//mongoose
+    const newPostId = this.postsRepositorySql.createPost(newPosts);
     return newPostId;
+  }
+
+  async updatePostForBlog(
+    blogId: string,
+    postId: string,
+    inputModel: PostForBlog,
+  ) {
+    return await this.postsRepositorySql.updatePostForBlog(
+      blogId,
+      postId,
+      inputModel,
+    );
+  }
+
+  async deletePostForBlog(blogId: string, postId: string) {
+    return await this.postsRepositorySql.deletePostForBlog(blogId, postId);
   }
 
   async updateBlog(postId: string, postUpdateDto: UpdatePostInputModel) {

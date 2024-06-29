@@ -24,6 +24,9 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { RegistrationUserUseCase } from './auth/aplication.use.case/registration.user.use.case';
 import { LoginUserUseCase } from './auth/aplication.use.case/login.user.use.case';
 import { LogoutSessionUseCase } from './auth/aplication.use.case/logout.session.use.case';
+import { DeviceRepositorySql } from './devices/infrastructure.sql/device.repository.sql';
+import { RefreshTokenBlackRepositorySql } from './auth/infrastrucrure.sql/refresh.token.black.repository.sql';
+import { SessionsQueryRepositorySql } from './devices/infrastructure.sql/device.query.repository.sql';
 const useCase = [
   RegistrationUserUseCase,
   LoginUserUseCase,
@@ -56,10 +59,13 @@ const adapters = [
     AuthService,
     DevicesService,
     DeviceRepository,
+    DeviceRepositorySql,
     RandomNumberService,
     JwtService,
     RefreshTokenBlackRepository,
+    RefreshTokenBlackRepositorySql,
     SessionsQueryRepository,
+    SessionsQueryRepositorySql,
     ...adapters,
     ...useCase,
   ],

@@ -7,6 +7,7 @@ import {
 import {
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 
@@ -16,6 +17,7 @@ import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from '../../auth/setting/constants';
 import { RandomNumberService } from '../../../../common/service/random/randomNumberUUVid';
 import { TokenService } from '../../../../common/service/jwt/token.service';
+import { DeviceRepositorySql } from '../infrastructure.sql/device.repository.sql';
 @Injectable()
 export class DevicesService {
   constructor(
@@ -23,6 +25,7 @@ export class DevicesService {
     private readonly jwtService: JwtService,
     protected randomNumberService: RandomNumberService,
     private readonly deviceRepository: DeviceRepository,
+    private readonly deviceRepositorySql: DeviceRepositorySql,
   ) {}
   async createSession(
     sessionInputModel: SessionInputModel,
@@ -53,7 +56,9 @@ export class DevicesService {
       },
     };
 
-    await this.deviceRepository.createNewSession(sessionModel);
+    //await this.deviceRepository.createNewSession(sessionModel); //mongoose
+    await this.deviceRepositorySql.createNewSession(sessionModel);
+
     //возвращаем two token:
     return { tokenAccess, tokenRefresh };
   }
@@ -63,42 +68,51 @@ export class DevicesService {
       secret: jwtConstants.secret,
     });
     if (!payload) throw new UnauthorizedException('Payload empty');
-    console.log('deviceId', payload.deviceId, 'userId: ', payload.userId);
 
     const currentUserId = payload.userId;
-    console.log('currentUserId', currentUserId);
-    const sessionUserId =
-      await this.deviceRepository.getSessionByDeviceId(deviceId);
-    console.log('sessionUserId: ', sessionUserId);
 
-    if (!sessionUserId) throw new UnauthorizedException('Session not found');
-    if (currentUserId !== sessionUserId)
+    const sessionUserId =
+      //await this.deviceRepositorySql.getSessionByDeviceId(deviceId);//mongoose
+      await this.deviceRepositorySql.getSessionByDeviceId(deviceId);
+
+    if (!sessionUserId) throw new NotFoundException('Session not found');
+    if (currentUserId !== sessionUserId.userId)
       throw new ForbiddenException('The session does not belong to the user');
 
-    return await this.deviceRepository.deleteSessionById(deviceId);
+    //return await this.deviceRepository.deleteSessionById(deviceId);//mongoose
+    return await this.deviceRepositorySql.deleteSessionById(
+      deviceId,
+      currentUserId,
+    );
   }
 
   async terminateSessionForLogout(deviceId: string, currentUserId: string) {
     const sessionUserId =
-      await this.deviceRepository.getSessionByDeviceId(deviceId);
+      // await this.deviceRepository.getSessionByDeviceId(deviceId); mongoose
+      await this.deviceRepositorySql.getSessionByDeviceId(deviceId);
 
     if (!sessionUserId) throw new UnauthorizedException('Session not found');
-    if (currentUserId !== sessionUserId)
+    //if (currentUserId !== sessionUserId)//mongoose
+    if (currentUserId !== sessionUserId.userId)
       throw new ForbiddenException('The session does not belong to the user');
-
-    return await this.deviceRepository.deleteSessionById(deviceId);
+    //return await this.deviceRepository.deleteSessionById(deviceId)//mongoose
+    return await this.deviceRepositorySql.deleteSessionById(
+      deviceId,
+      currentUserId,
+    );
   }
 
   async terminateAllSessions(refreshTokenValue: string) {
     const payload = this.jwtService.decode(refreshTokenValue);
     if (!payload) throw new UnauthorizedException();
-
     const currentUserId = payload.userId;
-    console.log('currentUserId', currentUserId);
     const currentSessionDeviceId = payload.deviceId;
-    console.log('currentSessionDeviceId', currentUserId);
 
-    await this.deviceRepository.deleteSessionsExpectCurrent(
+    // await this.deviceRepository.deleteSessionsExpectCurrent(
+    //   currentUserId,
+    //   currentSessionDeviceId,
+    // ); // mongoose
+    await this.deviceRepositorySql.deleteSessionsExpectCurrent(
       currentUserId,
       currentSessionDeviceId,
     );
@@ -121,8 +135,8 @@ export class DevicesService {
         expiredAt: tokenData.exp,
       },
     };
-
-    await this.deviceRepository.updateExistSession(
+    // await this.deviceRepository.updateExistSession( //mongoose
+    await this.deviceRepositorySql.updateExistSession(
       deviceId,
       sessionUpdateModel,
     );

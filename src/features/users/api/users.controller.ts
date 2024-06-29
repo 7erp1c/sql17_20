@@ -20,18 +20,18 @@ import { AdminAuthGuard } from '../../../common/guards/auth.admin.guard';
 import { CreateUserUseCaseCommand } from '../aplicaion.use.case/create.user.use.case';
 import { DeleteUserUseCaseCommand } from '../aplicaion.use.case/delete.user.use.case';
 import { CommandBus } from '@nestjs/cqrs';
-import { UserQueryRepositorySql } from '../sql.infrastructure/user.query.repository.sql';
+import { UsersQueryRepositorySql } from '../sql.infrastructure/users-query-repository-sql';
 
 // Tag для swagger
 
 @ApiTags('Users')
-@Controller('users')
+@Controller('sa/users')
 // Установка guard на весь контроллер
 //@UseGuards(AuthGuard)
 export class UsersController {
   constructor(
     protected usersQueryRepository: UsersQueryRepository,
-    protected userQueryRepositorySql: UserQueryRepositorySql,
+    protected userQueryRepositorySql: UsersQueryRepositorySql,
     private commandBus: CommandBus,
   ) {}
   @Get()

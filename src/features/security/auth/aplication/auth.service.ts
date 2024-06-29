@@ -22,6 +22,7 @@ import { EmailsManager } from '../../../../common/service/email/email-manager';
 import { DateCreate } from '../../../../base/adapters/get-current-date';
 import { CommandBus } from '@nestjs/cqrs';
 import { UpdatePasswordUseCaseCommand } from '../../../users/aplicaion.use.case/update.password.use.case';
+import { RefreshTokenBlackRepositorySql } from '../infrastrucrure.sql/refresh.token.black.repository.sql';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +34,7 @@ export class AuthService {
     private readonly dateCreate: DateCreate,
     private readonly devicesService: DevicesService,
     private readonly tokenBlack: RefreshTokenBlackRepository,
+    private readonly tokenBlackSql: RefreshTokenBlackRepositorySql,
     private readonly jwtService: JwtService,
     private readonly commandBus: CommandBus,
   ) {}
@@ -104,10 +106,14 @@ export class AuthService {
     const user = await this.usersService.getUserByCode(inputModelDto.code);
     const currentDate = await this.dateCreate.getCurrentDateInISOStringFormat();
     if (
+      // !user ||
+      // user.emailConfirmation.confirmationCode !== inputModelDto.code ||
+      // user.emailConfirmation.isConfirmed ||
+      // user.emailConfirmation.expirationDate < currentDate
       !user ||
-      user.emailConfirmation.confirmationCode !== inputModelDto.code ||
-      user.emailConfirmation.isConfirmed ||
-      user.emailConfirmation.expirationDate < currentDate
+      user.confirmationCode !== inputModelDto.code ||
+      user.isConfirmed ||
+      user.expirationDate < currentDate
     )
       throw new BadRequestException([
         {
@@ -124,8 +130,13 @@ export class AuthService {
 
   async registrationEmailResending(inputModelDto: UserEmailInputModel) {
     const RecoveryCode = await this.randomNumberService.generateRandomUUID();
+    // const delay = (ms: number) =>
+    //   new Promise((resolve) => setTimeout(resolve, ms));
+    //
+    // await delay(4000);
     const user = await this.usersService.getUserByEmail(inputModelDto.email);
-    if (!user || user.emailConfirmation.isConfirmed)
+    //if (!user || user.emailConfirmation.isConfirmed)//mongoose
+    if (!user || user.isConfirmed)
       throw new BadRequestException([
         {
           message: 'code already exist',
@@ -143,24 +154,56 @@ export class AuthService {
       user.login,
       RecoveryCode,
     );
+
     return updateUserConfirmationData;
   }
 
   async updatePairToken(oldRefreshToken: string) {
-    //ищем в блэклисте
-    const isInBlackList =
-      await this.tokenBlack.findInBlackList(oldRefreshToken);
-    //протухани и достаём payload
-    const payload = await this.jwtService.verifyAsync(oldRefreshToken, {
-      secret: jwtConstants.secret,
-    });
-    if (!payload || isInBlackList) throw new UnauthorizedException();
-    await this.tokenBlack.addToBlackList(oldRefreshToken);
+    try {
+      // Логирование полученного токена
+      console.log('*oldRefreshToken*', oldRefreshToken);
 
-    const deviceId = payload.deviceId;
-    const userId = payload.userId;
-    const userName = payload.loginUser;
+      // Поиск в черном списке
+      const isInBlackList =
+        await this.tokenBlackSql.findInBlackList(oldRefreshToken);
+      console.log('*isInBlackList*', isInBlackList);
 
-    return await this.devicesService.updateSession(userId, deviceId, userName);
+      // Проверка токена и извлечение payload
+      let payload;
+      try {
+        payload = await this.jwtService.verifyAsync(oldRefreshToken, {
+          secret: jwtConstants.secret,
+        });
+      } catch (error) {
+        // Обработка ошибки верификации токена
+        console.error('Ошибка при верификации токена:', error);
+        throw new UnauthorizedException('Token verification failed');
+      }
+
+      // Логирование payload
+      console.log('*payload*', payload);
+
+      // Проверка payload и наличия токена в черном списке
+      if (!payload || isInBlackList) {
+        throw new UnauthorizedException(
+          'Token not verified or located in black list',
+        );
+      }
+
+      // Добавление токена в черный список
+      await this.tokenBlackSql.addToBlackList(oldRefreshToken);
+
+      // Обновление сессии устройства
+      const { deviceId, userId, loginUser: userName } = payload;
+      return await this.devicesService.updateSession(
+        userId,
+        deviceId,
+        userName,
+      );
+    } catch (error) {
+      // Логирование исключения
+      console.error('Ошибка в updatePairToken:', error);
+      throw error;
+    }
   }
 }

@@ -34,6 +34,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { RegistrationUserUseCaseCommand } from '../../aplication.use.case/registration.user.use.case';
 import { LoginUserUseCaseCommand } from '../../aplication.use.case/login.user.use.case';
 import { LogoutSessionUseCaseCommand } from '../../aplication.use.case/logout.session.use.case';
+import { UsersQueryRepositorySql } from '../../../../users/sql.infrastructure/users-query-repository-sql';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -42,6 +43,7 @@ export class AuthController {
   constructor(
     protected authService: AuthService,
     protected usersQueryRepository: UsersQueryRepository,
+    protected usersQueryRepositorySql: UsersQueryRepositorySql,
     protected commandBus: CommandBus,
   ) {}
 
@@ -89,6 +91,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
+      console.log('Controller', req.cookies.refreshToken);
       const updatePairToken = await this.authService.updatePairToken(
         req.cookies.refreshToken,
       );
@@ -149,7 +152,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async getMe(@Req() req: Request) {
     try {
-      return this.usersQueryRepository.getUserAuthMe(req.user.userId);
+      //return this.usersQueryRepository.getUserAuthMe(req.user.userId); //mongoose
+      return this.usersQueryRepositorySql.getUserAuthMe(req.user.userId);
     } catch {
       throw new UnauthorizedException();
     }
