@@ -36,6 +36,8 @@ import { BlindGuard } from '../../../../common/guards/blind.guard.token';
 import { createQuery } from '../../../../base/adapters/query/create.query';
 import { AdminAuthGuard } from '../../../../common/guards/auth.admin.guard';
 import { QueryUsersRequestType } from '../../../users/api/models/input/input';
+import { PostsQueryRepositorySql } from '../infrastructure.sql/posts.query.repository.sql';
+import { CommentsQueryRepositorySql } from '../../comments/infrastructure.sql/comments.query.repository.sql';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -47,6 +49,8 @@ export class PostsController {
     protected commentsService: CommentsService,
     protected commentsQueryRepository: CommentsQueryRepository,
     protected likesService: LikesPostService,
+    protected postsQueryRepositorySql: PostsQueryRepositorySql,
+    protected commentsQueryRepositorySql: CommentsQueryRepositorySql,
   ) {}
 
   @Put('/:id/like-status')
@@ -76,13 +80,15 @@ export class PostsController {
   ) {
     const { sortData } = createQuery(query);
     if (req.user && req.user.userId) {
-      return await this.postsQueryRepository.getAllPosts(
+      // return await this.postsQueryRepository.getAllPosts(//mongoose
+      return await this.postsQueryRepositorySql.getAllPosts(
         sortData,
         undefined,
         req.user.userId,
       );
     } else {
-      return await this.postsQueryRepository.getAllPosts(sortData);
+      //return await this.postsQueryRepository.getAllPosts(sortData);//mongoose
+      return await this.postsQueryRepositorySql.getAllPosts(sortData);
     }
   }
 
@@ -115,10 +121,15 @@ export class PostsController {
     // Проверяем, существует ли объект req.user и его свойство userId
     if (req.user && req.user.userId) {
       console.log('user', req.user.userId);
-      return await this.postsQueryRepository.getPostById(id, req.user.userId);
+      //return await this.postsQueryRepository.getPostById(id, req.user.userId); // mongoose
+      return await this.postsQueryRepositorySql.getPostById(
+        id,
+        req.user.userId,
+      );
     } else {
       // Если req.user не существует или не имеет свойства userId, передаём null
-      return await this.postsQueryRepository.getPostById(id, null);
+      // return await this.postsQueryRepository.getPostById(id, null); // mongoose
+      return await this.postsQueryRepositorySql.getPostById(id, null);
     }
   }
 
@@ -172,8 +183,15 @@ export class PostsController {
     @Req() req: Request,
     @Body() inputModel: CommentCreateInputModel,
   ) {
-    const findPost = await this.postsService.findPostById(id);
-    if (!findPost) throw new NotFoundException('post not found');
+    //const findPost = await this.postsService.findPostById(id);//mongoose
+    //if (!findPost) throw new NotFoundException('post not found');
+    const postIsDeleted =
+      await this.postsQueryRepositorySql.getDeletedStatus(id);
+    if (postIsDeleted)
+      throw new NotFoundException([
+        { message: 'Post not found', field: 'isDeleted' },
+      ]);
+
     const commentCreateDto: CommentCreateDto = {
       content: inputModel.content,
       postId: id,
@@ -181,6 +199,7 @@ export class PostsController {
     };
     const commentId: string =
       await this.commentsService.createComment(commentCreateDto);
-    return await this.commentsQueryRepository.getCommentById(commentId);
+    //return await this.commentsQueryRepository.getCommentById(commentId);//mongoose
+    return await this.commentsQueryRepositorySql.getCommentById(commentId);
   }
 }

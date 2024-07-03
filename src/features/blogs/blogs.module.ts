@@ -37,8 +37,16 @@ import { BlogsQueryRepositorySql } from './blogs/infrastructure.sql/blogs.query.
 import { PostsRepositorySql } from './posts/infrastructure.sql/posts.repository.sql';
 import { PostsQueryRepositorySql } from './posts/infrastructure.sql/posts.query.repository.sql';
 import { PostsLikesQueryRepositorySql } from './likes/infrastructure.sql/posts.likes.query.repository.sql';
+import { PublicBlogsController } from './blogs/api/public.blogs.controller';
+import { CommentsQueryRepositorySql } from './comments/infrastructure.sql/comments.query.repository.sql';
+import { CommentsRepositorySql } from './comments/infrastructure.sql/comments.repository.sql';
 
-const controllers = [BlogsController, PostsController, CommentsController];
+const controllers = [
+  BlogsController,
+  PostsController,
+  CommentsController,
+  PublicBlogsController,
+];
 
 const services = [
   BlogsService,
@@ -57,6 +65,7 @@ const repositories = [
   PostLikesRepository,
   PostsRepositorySql, //sql
   BlogsRepositorySql, //sql
+  CommentsRepositorySql, //sql
 ];
 
 const queryRepositories = [
@@ -67,6 +76,7 @@ const queryRepositories = [
   PostsLikesQueryRepositorySql, //sql
   BlogsQueryRepositorySql, //sql
   PostsQueryRepositorySql, //sql
+  CommentsQueryRepositorySql, //sql
 ];
 
 const providers = [

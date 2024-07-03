@@ -6,10 +6,7 @@ import {
   QuerySearchType,
   QuerySortType,
 } from '../../../../base/adapters/query/types';
-import {
-  BlogOutputModelMapper,
-  BlogOutputModelMapperSql,
-} from '../api/models/output/blog.output.model';
+import { BlogOutputModelMapperSql } from '../api/models/output/blog.output.model';
 
 @Injectable()
 export class BlogsQueryRepositorySql {
@@ -85,7 +82,8 @@ export class BlogsQueryRepositorySql {
              SELECT "id", "name", "description",
          "websiteUrl","createdAt","isMembership"
                FROM "Blogs"
-                 WHERE "id" =  $1`,
+                 WHERE "id" =  $1
+                 AND "isDeleted" = false`,
         [id],
       );
       return result[0];

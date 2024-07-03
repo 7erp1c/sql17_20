@@ -3,30 +3,20 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
   NotFoundException,
   Param,
-  Post,
   Put,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import {
-  CreateBlogInputModel,
-  UpdateBlogInputModel,
-} from './models/input/create.blog.input.model';
 import { BlogsService } from '../aplication/blogs.service';
-import { BlogTypeOutput } from './models/output/output';
 import { QueryBlogsRequestType } from './models/input/input';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
-import {
-  CreatePostInputModelByBlog,
-  PostForBlog,
-} from '../../posts/api/models/input/create.post.input.models';
+import { PostForBlog } from '../../posts/api/models/input/create.post.input.models';
 import { PostsService } from '../../posts/aplication/posts.service';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 
@@ -38,9 +28,9 @@ import { BlindGuard } from '../../../../common/guards/blind.guard.token';
 import { BlogsQueryRepositorySql } from '../infrastructure.sql/blogs.query.repository.sql';
 import { PostsQueryRepositorySql } from '../../posts/infrastructure.sql/posts.query.repository.sql';
 
-@ApiTags('Blogs')
-@Controller('sa/blogs')
-export class BlogsController {
+@ApiTags('pub.Blogs')
+@Controller('/blogs')
+export class PublicBlogsController {
   constructor(
     protected blogsService: BlogsService,
     protected blogsQueryRepository: BlogsQueryRepository,
@@ -50,7 +40,6 @@ export class BlogsController {
     protected postsQueryRepositorySql: PostsQueryRepositorySql,
   ) {}
   @Get()
-  @UseGuards(AdminAuthGuard)
   @HttpCode(HttpStatus.OK)
   // @ApiResponse({
   //   status: 201,
@@ -62,15 +51,15 @@ export class BlogsController {
     return await this.blogsQueryRepositorySql.getAllBlogs(sortData, searchData);
   }
 
-  @Post()
-  @UseGuards(AdminAuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  async createBlog(
-    @Body() CreateModel: CreateBlogInputModel,
-  ): Promise<BlogTypeOutput> {
-    const createBlogId = await this.blogsService.createBlog(CreateModel);
-    return await this.blogsQueryRepositorySql.getById(createBlogId);
-  }
+  // @Post()
+  // @UseGuards(AdminAuthGuard)
+  // @HttpCode(HttpStatus.CREATED)
+  // async createBlog(
+  //   @Body() CreateModel: CreateBlogInputModel,
+  // ): Promise<BlogTypeOutput> {
+  //   const createBlogId = await this.blogsService.createBlog(CreateModel);
+  //   return await this.blogsQueryRepositorySql.getById(createBlogId);
+  // }
 
   @Get(':blogId/posts')
   @HttpCode(HttpStatus.OK)
@@ -103,38 +92,32 @@ export class BlogsController {
     }
   }
 
-  @Post(':blogId/posts')
-  @UseGuards(AdminAuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  async createPostForBlog(
-    @Param('blogId') blogId: string,
-    @Body() inputModel: CreatePostInputModelByBlog,
-  ) {
-    const blogIsDeleted =
-      await this.blogsQueryRepositorySql.getDeletedStatus(blogId);
-    if (blogIsDeleted)
-      throw new NotFoundException([
-        { message: 'Blog not found', field: 'isDeleted' },
-      ]);
-    // const findBlogById = await this.blogsService.findBlogById(blogId);//mongoose
-    const findBlogById = await this.blogsQueryRepositorySql.getById(blogId);
-
-    if (!findBlogById.id) {
-      throw new BadRequestException('Sorry bro, blog not found');
-    }
-    const inputModelPost = {
-      title: inputModel.title,
-      shortDescription: inputModel.shortDescription,
-      content: inputModel.content,
-      blogId: blogId,
-    };
-
-    const newPost = await this.postsService.createPost(
-      inputModelPost,
-      findBlogById.name,
-    );
-    return await this.postsQueryRepositorySql.getPostById(newPost);
-  }
+  // @Post(':blogId/posts')
+  // @UseGuards(AdminAuthGuard)
+  // @HttpCode(HttpStatus.CREATED)
+  // async createPostForBlog(
+  //   @Param('blogId') blogId: string,
+  //   @Body() inputModel: CreatePostInputModelByBlog,
+  // ) {
+  //   // const findBlogById = await this.blogsService.findBlogById(blogId);//mongoose
+  //   const findBlogById = await this.blogsQueryRepositorySql.getById(blogId);
+  //
+  //   if (!findBlogById.id) {
+  //     throw new BadRequestException('Sorry bro, blog not found');
+  //   }
+  //   const inputModelPost = {
+  //     title: inputModel.title,
+  //     shortDescription: inputModel.shortDescription,
+  //     content: inputModel.content,
+  //     blogId: blogId,
+  //   };
+  //
+  //   const newPost = await this.postsService.createPost(
+  //     inputModelPost,
+  //     findBlogById.name,
+  //   );
+  //   return await this.postsQueryRepositorySql.getPostById(newPost);
+  // }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
@@ -175,51 +158,51 @@ export class BlogsController {
       UpdateModel,
     );
   }
-  @Put(':id')
-  @UseGuards(AdminAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async updateBlog(
-    @Param('id') blogId: string,
-    @Body() UpdateModel: UpdateBlogInputModel,
-  ) {
-    const blogIsDeleted =
-      await this.blogsQueryRepositorySql.getDeletedStatus(blogId);
-    if (blogIsDeleted)
-      throw new NotFoundException([
-        { message: 'Blog not found', field: 'isDeleted' },
-      ]);
+  // @Put(':id')
+  // @UseGuards(AdminAuthGuard)
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async updateBlog(
+  //   @Param('id') blogId: string,
+  //   @Body() UpdateModel: UpdateBlogInputModel,
+  // ) {
+  //   const blogIsDeleted =
+  //     await this.blogsQueryRepositorySql.getDeletedStatus(blogId);
+  //   if (blogIsDeleted)
+  //     throw new NotFoundException([
+  //       { message: 'Blog not found', field: 'isDeleted' },
+  //     ]);
+  //
+  //   return await this.blogsService.updateBlog(blogId, UpdateModel);
+  // }
 
-    return await this.blogsService.updateBlog(blogId, UpdateModel);
-  }
-
-  @Delete(':blogId/posts/:postId')
-  @UseGuards(AdminAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePostForBlog(
-    @Param('blogId') blogId: string,
-    @Param('postId') postId: string,
-  ) {
-    const postIsDeleted =
-      await this.postsQueryRepositorySql.getDeletedStatus(postId);
-    if (postIsDeleted)
-      throw new NotFoundException([
-        { message: 'Post not found', field: 'isDeleted' },
-      ]);
-
-    return await this.postsService.deletePostForBlog(blogId, postId);
-  }
-
-  @Delete(':id')
-  @UseGuards(AdminAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlog(@Param('id') blogId: string) {
-    const blogIsDeleted =
-      await this.blogsQueryRepositorySql.getDeletedStatus(blogId);
-    if (blogIsDeleted)
-      throw new NotFoundException([
-        { message: 'Blog not found', field: 'isDeleted' },
-      ]);
-
-    return await this.blogsService.deleteBlog(blogId);
-  }
+  //   @Delete(':blogId/posts/:postId')
+  //   @UseGuards(AdminAuthGuard)
+  //   @HttpCode(HttpStatus.NO_CONTENT)
+  //   async deletePostForBlog(
+  //     @Param('blogId') blogId: string,
+  //     @Param('postId') postId: string,
+  //   ) {
+  //     const postIsDeleted =
+  //       await this.postsQueryRepositorySql.getDeletedStatus(postId);
+  //     if (postIsDeleted)
+  //       throw new NotFoundException([
+  //         { message: 'Post not found', field: 'isDeleted' },
+  //       ]);
+  //
+  //     return await this.postsService.deletePostForBlog(blogId, postId);
+  //   }
+  //
+  //   @Delete(':id')
+  //   @UseGuards(AdminAuthGuard)
+  //   @HttpCode(HttpStatus.NO_CONTENT)
+  //   async deleteBlog(@Param('id') blogId: string) {
+  //     const blogIsDeleted =
+  //       await this.blogsQueryRepositorySql.getDeletedStatus(blogId);
+  //     if (blogIsDeleted)
+  //       throw new NotFoundException([
+  //         { message: 'Blog not found', field: 'isDeleted' },
+  //       ]);
+  //
+  //     return await this.blogsService.deleteBlog(blogId);
+  //   }
 }

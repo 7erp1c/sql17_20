@@ -1,5 +1,5 @@
 import { LikesInfoType } from '../../../likes/api/model/output/output';
-import { CommentView, CommentViewOutput } from './type';
+import { CommentView, CommentViewOutput, CommentViewSql } from './type';
 import { WithId } from 'mongodb';
 
 export const getCommentsView = (
@@ -8,6 +8,22 @@ export const getCommentsView = (
 ): CommentViewOutput => {
   return {
     id: Comm._id.toString(),
+    content: Comm.content,
+    commentatorInfo: {
+      userId: Comm.commentatorInfo.userId,
+      userLogin: Comm.commentatorInfo.userLogin,
+    },
+    createdAt: Comm.createdAt,
+    likesInfo: likes,
+  };
+};
+
+export const getCommentsViewSql = (
+  Comm: CommentViewSql,
+  likes: LikesInfoType,
+): CommentViewOutput => {
+  return {
+    id: Comm.id.toString(),
     content: Comm.content,
     commentatorInfo: {
       userId: Comm.commentatorInfo.userId,

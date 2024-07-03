@@ -4,15 +4,11 @@ import {
   PostOutputDtoOne,
 } from '../api/models/output/output.types';
 import { postsDocument } from '../domain/posts.entity';
-import {
-  postMapper,
-  postMapperSql,
-} from '../api/models/output/post.output.models';
+import { postMapperSql } from '../api/models/output/post.output.models';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PostsLikesQueryRepositorySql } from '../../likes/infrastructure.sql/posts.likes.query.repository.sql';
 import { SortPostRepositoryType } from '../../../users/api/models/input/input';
-import { BlogTypeOutput } from '../../blogs/api/models/output/output';
 
 @Injectable()
 export class PostsQueryRepositorySql {
@@ -23,25 +19,30 @@ export class PostsQueryRepositorySql {
 
   async getAllPosts(
     sortData: SortPostRepositoryType,
-    blogId: string,
+    blogId?: string,
     userId?: string,
   ) {
-    const sortKeyMapDefault = {
+    const sortKeyMap = {
+      blogName: `"blogName"`,
       default: `"createdAt"`,
     };
-    const sortKey = sortKeyMapDefault.default;
+    const sortKey = sortKeyMap[sortData.sortBy] || sortKeyMap.default;
     const sortDirection = sortData.sortDirection === 'asc' ? `ASC` : `DESC`;
 
     // Создание условий поиска
     const queryParams: string[] = [];
-    queryParams.push(blogId);
+    let blogIdCondition = '';
+    if (blogId) {
+      blogIdCondition = `AND "blogId" = $1`;
+      queryParams.push(blogId);
+    }
 
     // Подсчет общего количества постов
     const documentsTotalCountQuery = `
   SELECT COUNT(*)
   FROM "Posts"
-  WHERE "blogId" = $1
-  AND "isDeleted" = false
+  WHERE "isDeleted" = false
+  ${blogIdCondition}
 `;
 
     const documentsTotalCountResult = await this.dataSource.query(
@@ -60,8 +61,8 @@ export class PostsQueryRepositorySql {
     const blogsQuery = `
   SELECT *
   FROM public."Posts"
-  WHERE "blogId" = $1
-  AND "isDeleted" = false
+  WHERE "isDeleted" = false
+  ${blogIdCondition}
   ORDER BY ${sortKey} ${sortDirection}
   OFFSET ${skippedDocuments}
   LIMIT ${sortData.pageSize}
@@ -99,10 +100,17 @@ export class PostsQueryRepositorySql {
         `SELECT *
           FROM "Posts" 
            WHERE "id" = $1
+           AND "isDeleted" = false
         `,
         [id],
       );
-      if (!post) throw new NotFoundException('Post not found');
+      if (!post)
+        throw new NotFoundException([
+          {
+            message: 'Post not found',
+            field: 'getPostById',
+          },
+        ]);
       const likes = await this.postsLikesQueryRepositorySql.getLikes(
         id,
         userId!,

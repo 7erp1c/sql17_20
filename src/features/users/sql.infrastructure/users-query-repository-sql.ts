@@ -55,7 +55,7 @@ export class UsersQueryRepositorySql {
 
     // Расчет смещения для пагинации
     const skippedDocuments = (sortData.pageNumber - 1) * sortData.pageSize;
-
+    //ORDER BY ${sortKey} ${sortDirection}
     // Получение пользователей из базы данных
     const usersQuery = `
   SELECT *

@@ -7,10 +7,11 @@ import {
 import { PostsService } from '../../posts/aplication/posts.service';
 import { CommentCreateDto } from '../../blogs/api/models/input/input';
 import { CommentsRepository } from '../infrastructure/comments.repository';
-import { CommentsDb, CommentsDb as Comments } from '../domain/comments.entity';
+import { CommentsDb } from '../domain/comments.entity';
 import { CommentUpdateInputModel } from '../api/input/comments.input.model';
 import { UsersService } from '../../../users/application/users.service';
 import { DateCreate } from '../../../../base/adapters/get-current-date';
+import { CommentsRepositorySql } from '../infrastructure.sql/comments.repository.sql';
 
 @Injectable()
 export class CommentsService {
@@ -19,6 +20,7 @@ export class CommentsService {
     protected userService: UsersService,
     protected postService: PostsService,
     protected dateCreate: DateCreate,
+    protected commentsRepositorySql: CommentsRepositorySql,
   ) {}
 
   async getCommentById(id: string) {
@@ -40,7 +42,8 @@ export class CommentsService {
       },
       createdAt: createdAt,
     };
-    return await this.commentsRepository.createComment(commentCreateModel);
+    //return await this.commentsRepository.createComment(commentCreateModel);//mongoose
+    return await this.commentsRepositorySql.createComment(commentCreateModel);
   }
   async updateComment(
     id: string,

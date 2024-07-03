@@ -10,11 +10,11 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import { AppModule } from '../../src/app.module';
 import { Test, TestingModule } from '@nestjs/testing';
 import { applyAppSettings } from '../../src/settings/apply-app-setting';
-import { AuthService } from '../../src/features/auth/aplication/auth.service';
 import { UserCreateInputModel } from '../../src/features/users/api/models/input/create.user.input.model';
 import { AuthTestManager } from '../util/auth.test.manager';
-import { LoginOrEmailInputModel } from '../../src/features/auth/api/model/input/loginOrEmailInputModel';
 import request from 'supertest';
+import { LoginOrEmailInputModel } from '../../src/features/security/auth/api/model/input/loginOrEmailInputModel';
+import { AuthService } from '../../src/features/security/auth/aplication/auth.service';
 
 // const TEST_ADMIN_CREDENTIALS = {
 //   login: 'admin',
