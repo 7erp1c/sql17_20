@@ -1,8 +1,8 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { CommentLikes } from '../domain/likes.entity';
+import { CommentLikes } from '../../domain/likes.entity';
 import { Model } from 'mongoose';
-import { LikesInfoType } from '../api/model/output/output';
-import { LikeStatusType } from '../api/model/input/input.types';
+import { LikesInfoType } from '../../api/model/output/output';
+import { LikeStatusType } from '../../api/model/input/input.types';
 import { Injectable } from '@nestjs/common';
 @Injectable()
 export class CommentsLikesQueryRepository {

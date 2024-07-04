@@ -2,9 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { LikesInfoType } from '../../likes/api/model/output/output';
-import { CommentView } from '../api/output/type';
 import { getCommentsViewSql } from '../api/output/mapper';
-import { CommentsLikesQueryRepositorySql } from '../../likes/infrastructure.sql/comments.likes.query.repository.sql';
+import { CommentsLikesQueryRepositorySql } from '../../likes/infrastructure.sql/query/comments.likes.query.repository.sql';
 
 @Injectable()
 export class CommentsQueryRepositorySql {
@@ -22,7 +21,8 @@ export class CommentsQueryRepositorySql {
         `,
         [commentId],
       );
-      if (!comment)
+      console.log(comment[0]);
+      if (!comment[0])
         throw new NotFoundException([
           {
             message: 'Comment not found',
@@ -30,12 +30,15 @@ export class CommentsQueryRepositorySql {
           },
         ]);
       const likes: LikesInfoType =
-        await this.commentsLikesQueryRepositorySql.getLikes(commentId, userId);
-      const comments = comment as unknown as CommentView;
-      if (comment) return getCommentsViewSql(comments, likes);
-      else return null;
-    } catch (err) {
-      return null;
+        await this.commentsLikesQueryRepositorySql.getLikes(commentId, userId!);
+      return getCommentsViewSql(comment[0], likes);
+    } catch (error) {
+      throw new NotFoundException([
+        {
+          message: error,
+          field: 'getCommentById',
+        },
+      ]);
     }
   }
 }

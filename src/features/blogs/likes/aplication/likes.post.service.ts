@@ -3,11 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { PostLikesRepository } from '../infrastructure/post.likes.repository';
 import { PostsLikes } from '../domain/likes.entity';
 import { DateCreate } from '../../../../base/adapters/get-current-date';
+import { PostLikesRepositorySql } from '../infrastructure.sql/post.likes.repository.sql';
 @Injectable()
 export class LikesPostService {
   constructor(
     protected dateCreate: DateCreate,
     protected postLikesRepository: PostLikesRepository,
+    protected postLikesRepositorySql: PostLikesRepositorySql,
   ) {}
   async createLikePost(
     userId: string,
@@ -23,6 +25,7 @@ export class LikesPostService {
       addedAt: createdAt,
       status: inputModel.likeStatus,
     };
-    await this.postLikesRepository.updatePostLike(likesDto);
+    //await this.postLikesRepository.updatePostLike(likesDto);//mongoose
+    await this.postLikesRepositorySql.updatePostLike(likesDto);
   }
 }

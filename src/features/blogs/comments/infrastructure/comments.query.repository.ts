@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LikesInfoType } from '../../likes/api/model/output/output';
 import { ObjectId } from 'mongodb';
-import { CommentsLikesQueryRepository } from '../../likes/infrastructure/comments.likes.query.repository';
+import { CommentsLikesQueryRepository } from '../../likes/infrastructure/query/comments.likes.query.repository';
 import { getCommentsView } from '../api/output/mapper';
 import { CommentView, CommentViewOutput } from '../api/output/type';
 import {

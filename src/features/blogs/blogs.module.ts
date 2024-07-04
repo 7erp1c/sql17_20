@@ -6,7 +6,7 @@ import { BlogsRepository } from './blogs/infrastructure/blogs.repository';
 import { PostsRepository } from './posts/infrastructure/posts.repository';
 import { CommentsRepository } from './comments/infrastructure/comments.repository';
 import { CommentsLikesRepository } from './likes/infrastructure/comments.likes.repository';
-import { PostsLikesQueryRepository } from './likes/infrastructure/posts.likes.query.repository';
+import { PostsLikesQueryRepository } from './likes/infrastructure/query/posts.likes.query.repository';
 import { CommentsQueryRepository } from './comments/infrastructure/comments.query.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from '../users/users.module';
@@ -18,7 +18,7 @@ import { LikesPostService } from './likes/aplication/likes.post.service';
 import { PostLikesRepository } from './likes/infrastructure/post.likes.repository';
 import { BlogsQueryRepository } from './blogs/infrastructure/blogs.query-repository';
 import { PostsQueryRepository } from './posts/infrastructure/posts.query-repository';
-import { CommentsLikesQueryRepository } from './likes/infrastructure/comments.likes.query.repository';
+import { CommentsLikesQueryRepository } from './likes/infrastructure/query/comments.likes.query.repository';
 import { Blog, BlogSchema } from './blogs/domain/blogs.entity';
 import { Post, PostsSchema } from './posts/domain/posts.entity';
 import { CommentSchema, CommentsDb } from './comments/domain/comments.entity';
@@ -36,10 +36,13 @@ import { BlogsRepositorySql } from './blogs/infrastructure.sql/blogs.repository.
 import { BlogsQueryRepositorySql } from './blogs/infrastructure.sql/blogs.query.repository.sql';
 import { PostsRepositorySql } from './posts/infrastructure.sql/posts.repository.sql';
 import { PostsQueryRepositorySql } from './posts/infrastructure.sql/posts.query.repository.sql';
-import { PostsLikesQueryRepositorySql } from './likes/infrastructure.sql/posts.likes.query.repository.sql';
+import { PostsLikesQueryRepositorySql } from './likes/infrastructure.sql/query/posts.likes.query.repository.sql';
 import { PublicBlogsController } from './blogs/api/public.blogs.controller';
 import { CommentsQueryRepositorySql } from './comments/infrastructure.sql/comments.query.repository.sql';
 import { CommentsRepositorySql } from './comments/infrastructure.sql/comments.repository.sql';
+import { CommentsLikesQueryRepositorySql } from './likes/infrastructure.sql/query/comments.likes.query.repository.sql';
+import { PostLikesRepositorySql } from './likes/infrastructure.sql/post.likes.repository.sql';
+import { CommentsLikesRepositorySql } from './likes/infrastructure.sql/comments.likes.repository.sql';
 
 const controllers = [
   BlogsController,
@@ -66,6 +69,8 @@ const repositories = [
   PostsRepositorySql, //sql
   BlogsRepositorySql, //sql
   CommentsRepositorySql, //sql
+  PostLikesRepositorySql, //sql
+  CommentsLikesRepositorySql, //sql
 ];
 
 const queryRepositories = [
@@ -77,6 +82,7 @@ const queryRepositories = [
   BlogsQueryRepositorySql, //sql
   PostsQueryRepositorySql, //sql
   CommentsQueryRepositorySql, //sql
+  CommentsLikesQueryRepositorySql, //sql
 ];
 
 const providers = [

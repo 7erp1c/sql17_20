@@ -7,7 +7,7 @@ import { postsDocument } from '../domain/posts.entity';
 import { postMapperSql } from '../api/models/output/post.output.models';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { PostsLikesQueryRepositorySql } from '../../likes/infrastructure.sql/posts.likes.query.repository.sql';
+import { PostsLikesQueryRepositorySql } from '../../likes/infrastructure.sql/query/posts.likes.query.repository.sql';
 import { SortPostRepositoryType } from '../../../users/api/models/input/input';
 
 @Injectable()
@@ -137,7 +137,9 @@ export class PostsQueryRepositorySql {
       );
       return result[0].isDeleted;
     } catch {
-      throw new NotFoundException();
+      throw new NotFoundException([
+        { message: 'Post not found', field: 'getDeletedStatus' },
+      ]);
     }
   }
 }

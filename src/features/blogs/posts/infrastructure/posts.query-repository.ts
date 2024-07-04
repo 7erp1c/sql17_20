@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PostOutputDto } from '../api/models/output/output.types';
 import { postMapper } from '../api/models/output/post.output.models';
-import { PostsLikesQueryRepository } from '../../likes/infrastructure/posts.likes.query.repository';
+import { PostsLikesQueryRepository } from '../../likes/infrastructure/query/posts.likes.query.repository';
 import { SortPostRepositoryType } from '../../../users/api/models/input/input';
 
 @Injectable()

@@ -2,8 +2,8 @@ import {
   LikeStatusType,
   NewestLikeType,
   PostsLikesInfoType,
-} from '../api/model/input/input.types';
-import { PostsLikes, PostsLikesDocument } from '../domain/likes.entity';
+} from '../../api/model/input/input.types';
+import { PostsLikes, PostsLikesDocument } from '../../domain/likes.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 

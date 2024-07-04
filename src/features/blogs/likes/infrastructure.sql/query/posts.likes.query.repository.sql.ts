@@ -2,8 +2,8 @@ import {
   LikeStatusType,
   NewestLikeType,
   PostsLikesInfoType,
-} from '../api/model/input/input.types';
-import { PostsLikesDocument } from '../domain/likes.entity';
+} from '../../api/model/input/input.types';
+import { PostsLikesDocument } from '../../domain/likes.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { Injectable } from '@nestjs/common';

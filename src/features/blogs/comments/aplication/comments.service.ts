@@ -30,8 +30,11 @@ export class CommentsService {
   async createComment(createDto: CommentCreateDto): Promise<string> {
     const createdAt = await this.dateCreate.getCurrentDateInISOStringFormat();
     const user = await this.userService.getUserById(createDto.userId);
-    if (!user) throw new BadRequestException();
-
+    if (!user)
+      throw new BadRequestException([
+        { message: 'User not found', field: 'user' },
+      ]);
+    console.log('user', user.login);
     //let commentCreateModel: Comment;
     const commentCreateModel: CommentsDb = {
       content: createDto.content,

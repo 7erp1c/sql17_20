@@ -26,9 +26,7 @@ export class CommentView {
 export class CommentViewSql {
   id: string;
   content: string;
-  commentatorInfo: {
-    userId: string | undefined;
-    userLogin: string | undefined;
-  };
+  userId: string | undefined;
+  userLogin: string | undefined;
   createdAt: string;
 }

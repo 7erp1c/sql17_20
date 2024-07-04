@@ -61,8 +61,14 @@ export class PostsController {
     @Body() inputModel: PostsLikesInputModel,
     @Req() req: Request,
   ) {
-    const findPost = await this.postsService.findPostById(id);
-    if (!findPost) throw new BadRequestException('Post not in Db');
+    // const findPost = await this.postsService.findPostById(id);
+    // if (!findPost) throw new BadRequestException('Post not in Db'); mongoose
+    const postIsDeleted =
+      await this.postsQueryRepositorySql.getDeletedStatus(id);
+    if (postIsDeleted)
+      throw new NotFoundException([
+        { message: 'Post not found', field: 'isDeleted' },
+      ]);
     return await this.likesService.createLikePost(
       req.user.userId,
       req.user.loginUser,
@@ -183,6 +189,7 @@ export class PostsController {
     @Req() req: Request,
     @Body() inputModel: CommentCreateInputModel,
   ) {
+    console.log(id);
     //const findPost = await this.postsService.findPostById(id);//mongoose
     //if (!findPost) throw new NotFoundException('post not found');
     const postIsDeleted =
@@ -191,7 +198,7 @@ export class PostsController {
       throw new NotFoundException([
         { message: 'Post not found', field: 'isDeleted' },
       ]);
-
+    console.log('postIsDeleted: ', postIsDeleted);
     const commentCreateDto: CommentCreateDto = {
       content: inputModel.content,
       postId: id,

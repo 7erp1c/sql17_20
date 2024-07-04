@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { LikesInfoType } from '../api/model/output/output';
-import { LikeStatusType } from '../api/model/input/input.types';
-import { PostsLikesDocument } from '../domain/likes.entity';
+import { LikesInfoType } from '../../api/model/output/output';
+import { LikeStatusType } from '../../api/model/input/input.types';
 
 @Injectable()
 export class CommentsLikesQueryRepositorySql {
@@ -44,16 +43,7 @@ export class CommentsLikesQueryRepositorySql {
       [commentId],
     );
     const dislikesCount = parseInt(dislikesResult[0].count, 10);
-    const newestLikes = await this.dataSource.query(
-      `
-         SELECT *
-            FROM "CommentsLikes"
-             WHERE "commentId" = $1 AND status = 'Like'
-              ORDER BY "addedAt" DESC
-               LIMIT 3
-      `,
-      [commentId],
-    );
+
     return {
       likesCount: likesCount,
       dislikesCount: dislikesCount,

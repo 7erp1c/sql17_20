@@ -23,11 +23,11 @@ export const getCommentsViewSql = (
   likes: LikesInfoType,
 ): CommentViewOutput => {
   return {
-    id: Comm.id.toString(),
+    id: Comm.id,
     content: Comm.content,
     commentatorInfo: {
-      userId: Comm.commentatorInfo.userId,
-      userLogin: Comm.commentatorInfo.userLogin,
+      userId: Comm.userId,
+      userLogin: Comm.userLogin,
     },
     createdAt: Comm.createdAt,
     likesInfo: likes,
