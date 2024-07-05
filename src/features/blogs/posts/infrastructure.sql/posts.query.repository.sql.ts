@@ -96,7 +96,7 @@ export class PostsQueryRepositorySql {
     userId: string | null = null,
   ): Promise<PostOutputDto> {
     try {
-      const post: postsDocument | null = await this.dataSource.query(
+      const post = await this.dataSource.query(
         `SELECT *
           FROM "Posts" 
            WHERE "id" = $1

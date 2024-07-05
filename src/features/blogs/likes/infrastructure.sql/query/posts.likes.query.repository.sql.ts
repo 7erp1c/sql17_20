@@ -14,7 +14,8 @@ export class PostsLikesQueryRepositorySql {
 
   async getLikes(postId: string, userId?: string): Promise<PostsLikesInfoType> {
     let likeStatus: LikeStatusType = 'None';
-
+    console.log('postId', postId);
+    console.log('userId', userId);
     if (userId) {
       const userLike = await this.dataSource.query(
         `
@@ -24,10 +25,11 @@ export class PostsLikesQueryRepositorySql {
             `,
         [postId, userId],
       );
-      if (userLike > 0) {
+      if (userLike.length > 0) {
         likeStatus = userLike[0].status;
       }
     }
+    console.log('likeStatus', likeStatus);
 
     const likesResult = await this.dataSource.query(
       `

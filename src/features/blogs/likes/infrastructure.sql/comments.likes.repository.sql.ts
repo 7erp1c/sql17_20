@@ -9,7 +9,7 @@ export class CommentsLikesRepositorySql {
     const like = await this.dataSource.query(
       `
       UPDATE public."CommentsLikes"
-      SET "status" = $3
+      SET status = $3
       WHERE "likedUserId" = $1
       AND "commentId" = $2
       `,
@@ -20,7 +20,7 @@ export class CommentsLikesRepositorySql {
       await this.dataSource.query(
         `
         INSERT INTO public."CommentsLikes"
-        ("commentId", "likedUserId", "status")
+        ("commentId", "likedUserId", status)
         values($1,$2,$3)`,
         [updateModel.commentId, updateModel.likedUserId, updateModel.status],
       );

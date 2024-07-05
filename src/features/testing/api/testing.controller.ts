@@ -21,10 +21,12 @@ export class TestingController {
   @Delete('/all-data')
   @HttpCode(204)
   async clearBd(): Promise<void> {
+    await this.dataSource.query(`DELETE FROM public."BlackList" CASCADE`);
     await this.dataSource.query(`DELETE FROM public."Sessions" CASCADE`);
     await this.dataSource.query(`DELETE FROM public."Users" CASCADE`);
-    // await this.dataSource.query(`DELETE  FROM public."Comments" CASCADE`);
-    // await this.dataSource.query(`DELETE FROM public."Likes" CASCADE`);
+    await this.dataSource.query(`DELETE  FROM public."CommentsLikes" CASCADE`);
+    await this.dataSource.query(`DELETE  FROM public."Comments" CASCADE`);
+    await this.dataSource.query(`DELETE FROM public."PostsLikes" CASCADE`);
     await this.dataSource.query(`DELETE  FROM public."Posts" CASCADE`);
     await this.dataSource.query(`DELETE FROM public."Blogs" CASCADE`);
 

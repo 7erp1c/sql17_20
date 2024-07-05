@@ -1,6 +1,5 @@
 import { ApiTags } from '@nestjs/swagger';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -124,6 +123,12 @@ export class PostsController {
     @Param('id') id: string,
     @Req() req: Request,
   ): Promise<PostOutputDto> {
+    const postIsDeleted =
+      await this.postsQueryRepositorySql.getDeletedStatus(id);
+    if (postIsDeleted)
+      throw new NotFoundException([
+        { message: 'Post not found', field: 'isDeleted' },
+      ]);
     // Проверяем, существует ли объект req.user и его свойство userId
     if (req.user && req.user.userId) {
       console.log('user', req.user.userId);
