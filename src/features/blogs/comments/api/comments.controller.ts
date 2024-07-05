@@ -24,6 +24,7 @@ import { CommentsQueryRepository } from '../infrastructure/comments.query.reposi
 import { CommentUpdateInputModel } from './input/comments.input.model';
 import { AuthGuard } from '../../../../common/guards/auth.guard';
 import { BlindGuard } from '../../../../common/guards/blind.guard.token';
+import { CommentsQueryRepositorySql } from '../infrastructure.sql/comments.query.repository.sql';
 
 @ApiTags('Comments')
 @Controller('comments')
@@ -32,6 +33,7 @@ export class CommentsController {
     protected commentsService: CommentsService,
     protected likesCommentsService: LikesCommentsService,
     protected commentsQueryRepository: CommentsQueryRepository,
+    protected commentsQueryRepositorySql: CommentsQueryRepositorySql,
   ) {}
   @Put('/:commentId/like-status')
   @UseGuards(AuthGuard)
@@ -41,10 +43,15 @@ export class CommentsController {
     @Body() inputModel: CommentsLikesInputModel,
     @Req() req: Request,
   ) {
-    console.log('commentId', id);
-    const comment = await this.commentsService.getCommentById(id);
-    if (!comment) throw new NotFoundException('Comment Not Found');
-
+    // console.log('commentId', id);
+    // const comment = await this.commentsService.getCommentById(id);
+    // if (!comment) throw new NotFoundException('Comment Not Found');//mongoose
+    const commentIsDeleted =
+      await this.commentsQueryRepositorySql.getDeletedStatus(id);
+    if (commentIsDeleted)
+      throw new NotFoundException([
+        { message: 'Comment not found', field: 'isDeleted' },
+      ]);
     await this.likesCommentsService.updateOrCreateCommentLike(
       id,
       inputModel,
@@ -60,6 +67,12 @@ export class CommentsController {
     @Body() inputModel: CommentUpdateInputModel,
     @Req() req: Request,
   ) {
+    const commentIsDeleted =
+      await this.commentsQueryRepositorySql.getDeletedStatus(id);
+    if (commentIsDeleted)
+      throw new NotFoundException([
+        { message: 'Comment not found', field: 'isDeleted' },
+      ]);
     return await this.commentsService.updateComment(
       req.params.commentId,
       inputModel,
@@ -72,8 +85,14 @@ export class CommentsController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteCommentById(@Param('commentId') id: string, @Req() req: Request) {
-    const findCommentById = await this.commentsService.getCommentById(id);
-    if (!findCommentById) throw new BadRequestException('Comment nor found');
+    // const findCommentById = await this.commentsService.getCommentById(id);
+    // if (!findCommentById) throw new BadRequestException('Comment nor found');//mongoose
+    const commentIsDeleted =
+      await this.commentsQueryRepositorySql.getDeletedStatus(id);
+    if (commentIsDeleted)
+      throw new NotFoundException([
+        { message: 'Comment not found', field: 'isDeleted' },
+      ]);
     return await this.commentsService.deleteComment(id, req.user.userId);
     //403
   }
@@ -82,15 +101,26 @@ export class CommentsController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(BlindGuard)
   async commentById(@Param('id') id: string, @Req() req: Request) {
-    const findCommentById = await this.commentsService.getCommentById(id);
-    if (!findCommentById) throw new BadRequestException('Comment nor found');
+    // const findCommentById = await this.commentsService.getCommentById(id);
+    // if (!findCommentById) throw new BadRequestException('Comment nor found');//mongoose
+    const commentIsDeleted =
+      await this.commentsQueryRepositorySql.getDeletedStatus(id);
+    if (commentIsDeleted)
+      throw new NotFoundException([
+        { message: 'Comment not found', field: 'isDeleted' },
+      ]);
     if (req.user && req.user.userId) {
-      return await this.commentsQueryRepository.getCommentById(
+      //return await this.commentsQueryRepository.getCommentById(//mongoose
+      return await this.commentsQueryRepositorySql.getCommentById(
         id,
         req.user.userId!,
       );
     } else {
-      return await this.commentsQueryRepository.getCommentById(id, undefined);
+      //return await this.commentsQueryRepositorySql.getCommentById(id, undefined);//mongoose
+      return await this.commentsQueryRepositorySql.getCommentById(
+        id,
+        undefined,
+      );
     }
   }
 }

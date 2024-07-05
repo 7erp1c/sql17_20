@@ -165,17 +165,23 @@ export class PostsController {
     @Req() req: Request,
   ) {
     const { sortData } = createQuery(query);
-    const findPostById = await this.postsService.findPostById(id);
-    if (!findPostById) throw new BadRequestException('Post not found');
+    // const findPostById = await this.postsService.findPostById(id);
+    // if (!findPostById) throw new BadRequestException('Post not found');//mongoose
+    const postIsDeleted =
+      await this.postsQueryRepositorySql.getDeletedStatus(id);
+    if (postIsDeleted)
+      throw new NotFoundException([
+        { message: 'Post not found', field: 'isDeleted' },
+      ]);
     if (req.user && req.user.userId) {
-      return await this.commentsQueryRepository.getAllCommentsForPost(
+      return await this.commentsQueryRepositorySql.getAllCommentsForPost(
         sortData,
         id,
         req.user.userId,
       );
     }
 
-    return await this.commentsQueryRepository.getAllCommentsForPost(
+    return await this.commentsQueryRepositorySql.getAllCommentsForPost(
       sortData,
       id,
       undefined,

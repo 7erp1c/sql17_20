@@ -24,7 +24,7 @@ export class CommentsService {
   ) {}
 
   async getCommentById(id: string) {
-    return await this.commentsRepository.getCommentById(id);
+    return await this.commentsRepositorySql.getCommentById(id);
   }
 
   async createComment(createDto: CommentCreateDto): Promise<string> {
@@ -55,19 +55,21 @@ export class CommentsService {
   ) {
     const findCommentId = await this.getCommentById(id);
     if (!findCommentId) throw new NotFoundException('Comment not found');
-    if (userId !== findCommentId.commentatorInfo.userId)
+    if (userId !== findCommentId.userId)
       throw new ForbiddenException('You are not the owner of the comment');
-    return await this.commentsRepository.updateComment(id, updateModel);
+    //return await this.commentsRepository.updateComment(id, updateModel);//mongoose
+    return await this.commentsRepositorySql.updateComment(id, updateModel);
   }
 
   async deleteComment(id: string, userId: string) {
     const findCommentId = await this.getCommentById(id);
 
     if (!findCommentId) throw new NotFoundException('Comment not found');
-    if (userId !== findCommentId.commentatorInfo.userId)
+    //if (userId !== findCommentId.commentatorInfo.userId)//mongoose
+    if (userId !== findCommentId.userId)
       throw new ForbiddenException('You are not the owner of the comment');
-
     //deleted:
-    return await this.commentsRepository.deleteComments(id);
+    //return await this.commentsRepository.deleteComments(id);//mongoose
+    return await this.commentsRepositorySql.deleteComments(id);
   }
 }
