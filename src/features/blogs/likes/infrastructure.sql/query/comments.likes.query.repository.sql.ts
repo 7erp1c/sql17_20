@@ -29,7 +29,7 @@ export class CommentsLikesQueryRepositorySql {
           SELECT COUNT(*)
             FROM "CommentsLikes"
               WHERE "commentId" = $1 
-                AND 'status' = 'Like'`,
+                AND status = 'Like'`,
       [commentId],
     );
     const likesCount = parseInt(likesResult[0].count, 10);
@@ -39,7 +39,7 @@ export class CommentsLikesQueryRepositorySql {
           SELECT COUNT(*)
             FROM "CommentsLikes"
               WHERE "commentId" = $1 
-                AND 'status' = 'Dislike'`,
+                AND status = 'Dislike'`,
       [commentId],
     );
     const dislikesCount = parseInt(dislikesResult[0].count, 10);

@@ -13,6 +13,7 @@ import process from 'process';
 import { TypeOrmModule } from '@nestjs/typeorm';
 //const URI = appSettings.api.MONGO_CONNECTION_URI;
 //console.log(URI, 'URI**');
+import bcrypt from 'bcrypt';
 
 const mongoModule = MongooseModule.forRoot(
   appSettings.env.isTesting()
@@ -65,3 +66,25 @@ export class AppModule implements NestModule {
       .forRoutes('*');
   }
 }
+
+const run = async () => {
+  const hash = '$2a$10$Vn9PcYBKm2y0GeJK.Kzn6.0TKig9rHLd0ssxfijvKidM4OLwlr0jS';
+  const passwords = [
+    '123',
+    'qwerty',
+    'password',
+    'superpassword',
+    'anykibeniky',
+    'belarus',
+  ];
+
+  for (const password of passwords) {
+    const result = await bcrypt.compare(password, hash);
+    if (result) {
+      console.log('correct password: ', password);
+      break;
+    }
+  }
+};
+
+run();
